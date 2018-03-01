@@ -1,0 +1,42 @@
+Plugin\Banner\Entity\Banner:
+    type: entity
+    table: plg_banner
+    repositoryClass: Plugin\Banner\Repository\BannerRepository
+    id:
+        id:
+            type: integer
+            nullable: false
+            unsigned: true
+            id: true
+            column: banner_id
+            generator:
+                strategy: AUTO
+    fields:
+        file_name:
+            type: text
+            nullable: false
+        rank:
+            type: integer
+            nullable: true
+            unsigned: true
+        type:
+            type: smallint
+            nullable: true
+            unsigned: true
+        link:
+            type: text
+            nullable: true
+        create_date:
+            type: datetime
+            nullable: false
+        big:
+            type: smallint
+            nullable: true
+            options:
+                default: '0'
+        target:
+            type: smallint
+            nullable: true
+            options:
+                default: '0'
+    lifecycleCallbacks: {  }
