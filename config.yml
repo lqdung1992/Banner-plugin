@@ -1,5 +1,5 @@
-name: Banner
-code: Banner
+name: BannerSimplePlugin
+code: BannerSimple
 version: 1.0.0
 service: 
     - BannerServiceProvider

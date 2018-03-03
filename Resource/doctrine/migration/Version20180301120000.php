@@ -15,23 +15,22 @@ class Version20180301120000 extends AbstractMigration
     /**
      * @var string table name
      */
-    const TABLE = 'plg_banner';
+    const TABLE = 'plg_banner_simple';
 
     /**
      * @var array plugin entity
      */
     protected $entities = array(
-        'Plugin\Banner\Entity\Banner',
+        'Plugin\BannerSimple\Entity\Banner',
     );
 
     protected $sequence = array(
-        'plg_banner_banner_id_seq',
+        'plg_banner_simple_banner_id_seq',
     );
 
     /**
-     * Up method
-     *
      * @param Schema $schema
+     * @throws \Doctrine\ORM\Tools\ToolsException
      */
     public function up(Schema $schema)
     {
@@ -39,9 +38,8 @@ class Version20180301120000 extends AbstractMigration
     }
 
     /**
-     * Down method
-     *
      * @param Schema $schema
+     * @throws \Doctrine\ORM\ORMException
      */
     public function down(Schema $schema)
     {
@@ -72,11 +70,9 @@ class Version20180301120000 extends AbstractMigration
     }
 
     /**
-     * Create maker table.
-     *
      * @param Schema $schema
-     *
      * @return bool
+     * @throws \Doctrine\ORM\Tools\ToolsException
      */
     protected function createTable(Schema $schema)
     {
@@ -96,11 +92,10 @@ class Version20180301120000 extends AbstractMigration
     }
 
     /**
-     * Get metadata.
-     *
      * @param EntityManager $em
-     *
      * @return array
+     * @throws \Doctrine\Common\Persistence\Mapping\MappingException
+     * @throws \ReflectionException
      */
     protected function getMetadata(EntityManager $em)
     {

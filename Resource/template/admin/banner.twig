@@ -73,7 +73,7 @@
                     $link.val(linkData);
                 }
                 var display = 'none';
-                if ('{{ app.request.get('type', 1) }}' == '{{ constant('Plugin\\Banner\\Entity\\Banner::BANNER') }}') {
+                if ('{{ app.request.get('type', 1) }}' == '{{ constant('Plugin\\BannerSimple\\Entity\\Banner::BANNER') }}') {
                     display = 'block';
                 }
                 // div included
@@ -153,7 +153,7 @@
                 var deleteLi = $(this).parent("li");
                 deleteLi.remove();
                 // Remove image link
-                var $key = $(deleteLi).find('input').first().attr('id').replace('admin_plugin_banner_add_images_', '').replace('admin_plugin_banner_images_', '');
+                var $key = $(deleteLi).find('input').first().attr('id').replace('admin_plugin_banner_simple_add_images_', '').replace('admin_plugin_banner_simple_images_', '');
                 $('#image_link' + $key).remove();
 
                 hideSvg();
@@ -162,7 +162,7 @@
             });
 
             $('#{{ form.file_name.vars.id }}').fileupload({
-                url: "{{ url('admin_plugin_banner_image_add') }}",
+                url: "{{ url('admin_plugin_banner_simple_image_add') }}",
                 type: "post",
                 sequentialUploads: true,
                 dataType: 'json',
@@ -216,9 +216,9 @@
                 $('#{{ form.file_name.vars.id }}').click();
             });
 
-            $("input[name='admin_plugin_banner[type]']").change(function() {
+            $("input[name='admin_plugin_banner_simple[type]']").change(function() {
                 var val = $(this).val();
-                var url = '{{ url('admin_plugin_banner') }}' + '?type='+val;
+                var url = '{{ url('admin_plugin_banner_simple') }}' + '?type='+val;
                 window.location.href = url;
             })
 
@@ -241,7 +241,9 @@
                         <div id="detail_box__image" class="form-group">
                             <label class="col-sm-2 control-label">
                                 {{ form.file_name.vars.label }}<br>
-                                <span class="small">620px以上推奨</span>
+                                <span class="small">1120px以上推奨</span>
+                                <br>
+                                <span class="small">保存した後、写真の注文が更新されます。</span>
                             </label>
                             <div id="detail_files_box" class="col-sm-9 col-lg-10">
                                 <div class="photo_files" id="drag-drop-area">

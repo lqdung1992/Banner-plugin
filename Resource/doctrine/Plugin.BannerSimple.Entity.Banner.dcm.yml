@@ -1,7 +1,7 @@
-Plugin\Banner\Entity\Banner:
+Plugin\BannerSimple\Entity\Banner:
     type: entity
-    table: plg_banner
-    repositoryClass: Plugin\Banner\Repository\BannerRepository
+    table: plg_banner_simple
+    repositoryClass: Plugin\BannerSimple\Repository\BannerRepository
     id:
         id:
             type: integer

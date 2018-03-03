@@ -5,9 +5,9 @@
  * Time: 12:54 PM
  */
 
-namespace Plugin\Banner\ServiceProvider;
+namespace Plugin\BannerSimple\ServiceProvider;
 
-use Plugin\Banner\Form\Type\BannerType;
+use Plugin\BannerSimple\Form\Type\BannerType;
 use Silex\Application as BaseApplication;
 use Silex\ServiceProviderInterface;
 use Eccube\Common\Constant;
@@ -22,23 +22,28 @@ class BannerServiceProvider implements ServiceProviderInterface
      */
     public function register(BaseApplication $app)
     {
-        $app['plugin.banner.repository.banner'] = $app->share(function () use ($app) {
-            return $app['orm.em']->getRepository('Plugin\Banner\Entity\Banner');
+        $app['plugin.banner_simple.repository.banner'] = $app->share(function () use ($app) {
+            return $app['orm.em']->getRepository('Plugin\BannerSimple\Entity\Banner');
         });
 
         // admin screen controller
         $admin = $app['controllers_factory'];
+        $front = $app['controllers_factory'];
         // 強制SSL
         if ($app['config']['force_ssl'] == Constant::ENABLED) {
             $admin->requireHttps();
+            $front->requireHttps();
         }
 
-        $admin->match('/plugin/banner', '\\Plugin\\Banner\\Controller\\BannerController::index')
-            ->bind('admin_plugin_banner');
-        $admin->match('/plugin/banner/image/add', '\\Plugin\\Banner\\Controller\\BannerController::addImage')
-            ->bind('admin_plugin_banner_image_add');
+        $admin->match('/plugin/banner_simple', '\\Plugin\\BannerSimple\\Controller\\BannerController::index')
+            ->bind('admin_plugin_banner_simple');
+        $admin->match('/plugin/banner_simple/image/add', '\\Plugin\\BannerSimple\\Controller\\BannerController::addImage')
+            ->bind('admin_plugin_banner_simple_image_add');
 
         $app->mount('/'.trim($app['config']['admin_route'], '/').'/', $admin);
+
+        $front->match('/block/banner_simple', '\\Plugin\\BannerSimple\\Controller\\Block\\BannerController::index')->bind('block_banner_simple');
+        $app->mount('', $front);
 
         $app['form.types'] = $app->share($app->extend('form.types', function ($types) {
             $types[] = new BannerType();
@@ -52,7 +57,7 @@ class BannerServiceProvider implements ServiceProviderInterface
         $app['config'] = $app->share($app->extend('config', function ($config) {
             $addNavi['id'] = 'banner';
             $addNavi['name'] = 'バナー/スライダー';
-            $addNavi['url'] = 'admin_plugin_banner';
+            $addNavi['url'] = 'admin_plugin_banner_simple';
 
             $nav = $config['nav'];
             foreach ($nav as $key => $val) {

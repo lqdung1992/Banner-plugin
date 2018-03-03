@@ -1,0 +1,136 @@
+{#
+ # Created by PhpStorm.
+ # User: lqdung1992@gmail.com
+ # Date: 3/3/2018
+ # Time: 2:33 PM
+ #}
+{% block stylesheet %}
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/gh/kenwheeler/slick@1.8.1/slick/slick-theme.css"/>
+    <style type="text/css">
+        .slider-nav img {
+            padding: 2%;
+        }
+        @media only screen and (max-width: 767px) {
+            .slider-nav {
+                display: none;
+            }
+        }
+
+        #main-visual img {
+            width: 100%;
+        }
+        .thumb img {
+            height: 100px;
+        }
+        #main-visual .slick-slider {
+            margin-bottom: 10px;
+        }
+        #banner img {
+            width: 100%;
+        }
+        .clearfix {
+            clear: both;
+        }
+        #banner .banner-item {
+            margin-bottom: 5px;
+        }
+    </style>
+{% endblock stylesheet %}
+
+{% if sliders|length > 0 %}
+    <script type="text/javascript">
+        $(function() {
+            $('#main-visual .slider-for').slick({
+                slidesToShow: 1,
+                slidesToScroll: 1,
+                arrows: false,
+                fade: true,
+                autoplay: true,
+                speed: 300,
+                adaptiveHeight: true,
+                asNavFor: '.slider-nav',
+                responsive: [
+                    {
+                        breakpoint: 768,
+                        settings: {
+                            arrows: true,
+                            dots: true
+                        }
+                    }
+                ]
+            });
+            $('#main-visual .slider-nav').slick({
+                slidesToShow: 6,
+                slidesToScroll: 1,
+                asNavFor: '.slider-for',
+                dots: true,
+                arrows: false,
+                centerMode: true,
+                focusOnSelect: true,
+            });
+        });
+    </script>
+    <div id="main-visual">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="slider slider-for">
+                    {% for slider in sliders %}
+                        <div class="item">
+                            {% if slider.link %}
+                            <a href="{{ slider.link }}" {% if slider.target %}target="_blank"{% endif %}>
+                                {% endif %}
+                                <img src="{{ app.config.image_save_urlpath }}/{{ slider.file_name|no_image_product }}" >
+                                {% if slider.link %}
+                            </a>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="slider slider-nav">
+                    {% for slider in sliders %}
+                        <div class="thumb">
+                            <img src="{{ app.config.image_save_urlpath }}/{{ slider.file_name|no_image_product }}">
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+{% if banners|length > 0 %}
+    <script type="text/javascript">
+        $(function () {
+            $(window).load(function() {
+                $('.banner-item').matchHeight();
+            });
+        });
+    </script>
+    <div id="banner" class="row">
+        <div class="clearfix">
+            {% for banner in banners %}
+                {% if banner.big == constant('Plugin\\BannerSimple\\Entity\\Banner::IS_BIG') %}
+                    <div class="col-sm-12 col-xs-12 banner-item">
+                        {% if banner.link %}
+                        <a href="{{banner.link}}" {% if banner.target %}target="_blank"{% endif %}>
+                            {% endif %}
+                            <img src="{{ app.config.image_save_urlpath }}/{{ banner.file_name|no_image_product }}">
+                            {% if banner.link %}
+                        </a>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="col-sm-6 col-xs-6 banner-item">
+                        {% if banner.link %}
+                        <a href="{{banner.link}}" {% if banner.target %}target="_blank"{% endif %}>
+                            {% endif %}
+                            <img src="{{ app.config.image_save_urlpath }}/{{ banner.file_name|no_image_product }}"/>
+                            {% if banner.link %}
+                        </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}

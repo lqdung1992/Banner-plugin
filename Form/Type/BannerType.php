@@ -1,7 +1,7 @@
 <?php
-namespace Plugin\Banner\Form\Type;
+namespace Plugin\BannerSimple\Form\Type;
 
-use Plugin\Banner\Entity\Banner;
+use Plugin\BannerSimple\Entity\Banner;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -104,6 +104,6 @@ class BannerType extends AbstractType
      */
     public function getName()
     {
-        return 'admin_plugin_banner';
+        return 'admin_plugin_banner_simple';
     }
 }

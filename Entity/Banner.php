@@ -1,9 +1,9 @@
 <?php
 
-namespace Plugin\Banner\Entity;
+namespace Plugin\BannerSimple\Entity;
 
 /**
- * Banner
+ * BannerSimple
  */
 class Banner extends \Eccube\Entity\AbstractEntity
 {

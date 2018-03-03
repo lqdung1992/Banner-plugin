@@ -1,9 +1,9 @@
 <?php
-namespace Plugin\Banner\Controller;
+namespace Plugin\BannerSimple\Controller;
 
 use Eccube\Application;
 use Eccube\Controller\AbstractController;
-use Plugin\Banner\Entity\Banner;
+use Plugin\BannerSimple\Entity\Banner;
 use Symfony\Component\Form\FormBuilder;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Filesystem\Filesystem;
@@ -12,12 +12,12 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\UnsupportedMediaTypeHttpException;
 
 /**
- * Banner controller
+ * BannerSimple controller
  */
 class BannerController extends AbstractController
 {
     /**
-     * Banner management。
+     * BannerSimple management。
      *
      * @param Application $app
      * @return \Symfony\Component\HttpFoundation\Response
@@ -25,9 +25,9 @@ class BannerController extends AbstractController
     public function index(Application $app, Request $request)
     {
         $type = $request->get('type', Banner::BANNER);
-        $banners = $app['plugin.banner.repository.banner']->findBy(array('type' => $type), array('rank' => 'ASC'));
+        $banners = $app['plugin.banner_simple.repository.banner']->findBy(array('type' => $type), array('rank' => 'ASC'));
         /** @var FormBuilder $builder */
-        $builder = $app['form.factory']->createBuilder('admin_plugin_banner');
+        $builder = $app['form.factory']->createBuilder('admin_plugin_banner_simple');
         $form = $builder->getForm();
         $images = array();
         $links = array();
@@ -74,7 +74,7 @@ class BannerController extends AbstractController
 
                 $delete_images = $form->get('delete_images')->getData();
                 foreach ($delete_images as $delete_image) {
-                    $Banner = $app['plugin.banner.repository.banner']->findOneBy(array('file_name' => $delete_image));
+                    $Banner = $app['plugin.banner_simple.repository.banner']->findOneBy(array('file_name' => $delete_image));
                     if ($Banner instanceof Banner) {
                         $app['orm.em']->remove($Banner);
 
@@ -88,7 +88,7 @@ class BannerController extends AbstractController
                 if (!empty($old_images)) {
                     foreach ($old_images as $key => $old_image) {
                         /** @var Banner $Banner */
-                        $Banner = $app['plugin.banner.repository.banner']->findOneBy(array('file_name' => $old_image));
+                        $Banner = $app['plugin.banner_simple.repository.banner']->findOneBy(array('file_name' => $old_image));
                         if ($Banner) {
                             $Banner->setLink($links[$key]);
                             if (isset($targets[$key])) {
@@ -108,7 +108,7 @@ class BannerController extends AbstractController
                     foreach ($ranks as $key => $rank) {
                         list($filename, $rank_val) = explode('//', $rank);
                         unset($banner);
-                        $banner = $app['plugin.banner.repository.banner']->findOneBy(array('file_name' => $filename, 'type' => $type));
+                        $banner = $app['plugin.banner_simple.repository.banner']->findOneBy(array('file_name' => $filename, 'type' => $type));
                         if ($banner) {
                             $banner->setRank($rank_val);
                             $app['orm.em']->persist($banner);
@@ -119,12 +119,12 @@ class BannerController extends AbstractController
                 $app['orm.em']->flush();
                 $app->addSuccess("admin.plugin.banner.success", 'admin');
 
-                return $app->redirect($app->url('admin_plugin_banner', ['type' => $type]));
+                return $app->redirect($app->url('admin_plugin_banner_simple', array('type' => $type)));
             }
             $app->addError("admin.plugin.banner.error", 'admin');
         }
 
-        return $app->render('Banner/Resource/template/admin/banner.twig', array(
+        return $app->render('BannerSimple/Resource/template/admin/banner.twig', array(
             'form' => $form->createView(),
         ));
     }
@@ -142,7 +142,7 @@ class BannerController extends AbstractController
             throw new BadRequestHttpException('リクエストが不正です');
         }
 
-        $images = $request->files->get('admin_plugin_banner');
+        $images = $request->files->get('admin_plugin_banner_simple');
 
         $files = array();
         if (count($images) > 0) {
