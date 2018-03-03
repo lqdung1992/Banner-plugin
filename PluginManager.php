@@ -90,7 +90,7 @@ class PluginManager extends AbstractPluginManager
      */
     public function disable($config, $app)
     {
-        $Block = $app['eccube.repository.block']->findOneBy(array('file_name' => 'banner'));
+        $Block = $app['eccube.repository.block']->findOneBy(array('file_name' => 'banner_simple'));
         if($Block){
             $BlockPositions = $app['orm.em']
                 ->getRepository('Eccube\Entity\BlockPosition')
