@@ -19,6 +19,7 @@
         #main-visual img {
             width: 100%;
         }
+
         .thumb img {
             height: 100px;
         }
@@ -28,48 +29,19 @@
         #banner img {
             width: 100%;
         }
-        .clearfix {
-            clear: both;
-        }
+
         #banner .banner-item {
             margin-bottom: 5px;
+        }
+
+        .slick-prev:before, .slick-next:before {
+            opacity: .25;
+            color: black;
         }
     </style>
 {% endblock stylesheet %}
 
 {% if sliders|length > 0 %}
-    <script type="text/javascript">
-        $(function() {
-            $('#main-visual .slider-for').slick({
-                slidesToShow: 1,
-                slidesToScroll: 1,
-                arrows: false,
-                fade: true,
-                autoplay: true,
-                speed: 300,
-                adaptiveHeight: true,
-                asNavFor: '.slider-nav',
-                responsive: [
-                    {
-                        breakpoint: 768,
-                        settings: {
-                            arrows: true,
-                            dots: true
-                        }
-                    }
-                ]
-            });
-            $('#main-visual .slider-nav').slick({
-                slidesToShow: 6,
-                slidesToScroll: 1,
-                asNavFor: '.slider-for',
-                dots: true,
-                arrows: false,
-                centerMode: true,
-                focusOnSelect: true,
-            });
-        });
-    </script>
     <div id="main-visual">
         <div class="row">
             <div class="col-sm-12">
@@ -96,6 +68,45 @@
             </div>
         </div>
     </div>
+
+    <script type="text/javascript">
+        $(function() {
+            $('#main-visual .slider-for').slick({
+                slidesToShow: 1,
+                slidesToScroll: 1,
+                arrows: false,
+                fade: true,
+                autoplay: true,
+                speed: 300,
+                adaptiveHeight: true,
+                asNavFor: '.slider-nav',
+                responsive: [
+                    {
+                        breakpoint: 768,
+                        settings: {
+                            arrows: true,
+                            dots: true
+                        }
+                    }
+                ]
+            });
+            var slider_num = '{{ sliders|length }}';
+            if (slider_num < 6) {
+                slider_num = 3;
+            } else {
+                slider_num = 5;
+            }
+
+            $('#main-visual .slider-nav').slick({
+                slidesToShow: slider_num,
+                slidesToScroll: 1,
+                asNavFor: '.slider-for',
+                arrows: true,
+                centerMode: true,
+                focusOnSelect: true
+            });
+        });
+    </script>
 {% endif %}
 
 {% if banners|length > 0 %}

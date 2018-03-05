@@ -1,4 +1,9 @@
 <?php
+/**
+ * Created by lqdung1992.
+ * Date: 3/1/2018
+ * Time: 12:54 PM
+ */
 namespace Plugin\BannerSimple\Form\Type;
 
 use Plugin\BannerSimple\Entity\Banner;

@@ -1,13 +1,10 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: lqdung1992@gmail.com
- * Date: 3/3/2018
- * Time: 2:30 PM
+ * Created by lqdung1992.
+ * Date: 3/1/2018
+ * Time: 12:54 PM
  */
-
 namespace Plugin\BannerSimple\Controller\Block;
-
 
 use Eccube\Application;
 use Plugin\BannerSimple\Entity\Banner;

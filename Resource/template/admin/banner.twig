@@ -1,9 +1,14 @@
+{#/**
+ * Created by lqdung1992.
+ * Date: 3/1/2018
+ * Time: 12:54 PM
+ */#}
 {% extends 'default_frame.twig' %}
 
 {% set menus = ['content', 'banner'] %}
 
 {% block title %}コンテンツ管理{% endblock %}
-{% block sub_title %}バナー{% endblock %}
+{% block sub_title %}バナー/スライダー{% endblock %}
 
 {% form_theme form 'Form/bootstrap_3_horizontal_layout.html.twig' %}
 
@@ -233,11 +238,10 @@
             <div id="detail_wrap" class="col-md-9">
                 <div id="detail_box" class="box form-horizontal">
                     <div id="detail_box__header" class="box-header">
-                        <h3 class="box-title">バナー</h3>
+                        <h3 class="box-title">バナー/スライダー</h3>
                     </div><!-- /.box-header -->
                     <div id="detail_box__body" class="box-body">
                         {{ form_row(form.type) }}
-
                         <div id="detail_box__image" class="form-group">
                             <label class="col-sm-2 control-label">
                                 {{ form.file_name.vars.label }}<br>
