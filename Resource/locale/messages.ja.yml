@@ -1,0 +1,14 @@
+banner.type.label: タイプ
+banner.type.banner: バナー
+banner.type.slider: スライダー
+banner.type.file: バナー/スライダーファイル
+banner.type.link: バナー/スライダーリンク
+banner.type.link.placeholder: URLを入力してください
+banner.type.big: 大きなバナー
+banner.type.target: 別ウィンドウを開く
+banner.file.help1: 1090px以上推奨
+banner.file.help2: 保存した後、写真の注文が更新されます。
+banner.addition: 添加
+banner.file.big.big: 100% - 1090px
+banner.file.big.small: 50% - 530px
+banner.nav: バナー/スライダー

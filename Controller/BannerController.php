@@ -6,33 +6,56 @@
  */
 namespace Plugin\BannerSimple\Controller;
 
-use Eccube\Application;
 use Eccube\Controller\AbstractController;
 use Plugin\BannerSimple\Entity\Banner;
+use Plugin\BannerSimple\Form\Type\BannerType;
+use Plugin\BannerSimple\Repository\BannerRepository;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\Form\FormBuilder;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\UnsupportedMediaTypeHttpException;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * BannerSimple controller
  */
 class BannerController extends AbstractController
 {
+    /** @var BannerRepository */
+    private $bannerSampleRepo;
+
+    /** @var string */
+    private $bannerDir = '/Banner';
+
+    /**
+     * BannerController constructor.
+     * @param BannerRepository $bannerSampleRepo
+     */
+    public function __construct(BannerRepository $bannerSampleRepo)
+    {
+        $this->bannerSampleRepo = $bannerSampleRepo;
+    }
+
     /**
      * BannerSimple management。
      *
-     * @param Application $app
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param Request $request
+     * @param int $type
+     * @return array|RedirectResponse
+     * @Route("/%eccube_admin_route%/plugin/banner_simple", name="admin_plugin_banner")
+     * @Route("/%eccube_admin_route%/plugin/banner_simple/{type}", name="admin_plugin_banner_simple", requirements={"type" = "\d+"})
+     * @Template("@BannerSimple/admin/banner.twig")
      */
-    public function index(Application $app, Request $request)
+    public function index(Request $request, $type = Banner::BANNER)
     {
-        $type = $request->get('type', Banner::BANNER);
-        $banners = $app['plugin.banner_simple.repository.banner']->findBy(array('type' => $type), array('rank' => 'ASC'));
+        $banners = $this->bannerSampleRepo->findBy(array('type' => $type), array('sort_no' => 'ASC'));
         /** @var FormBuilder $builder */
-        $builder = $app['form.factory']->createBuilder('admin_plugin_banner_simple');
+        $builder = $this->formFactory->createBuilder(BannerType::class);
         $form = $builder->getForm();
         $images = array();
         $links = array();
@@ -62,86 +85,86 @@ class BannerController extends AbstractController
                     $Banner = new Banner();
                     $Banner
                         ->setFileName($add_image)
-                        ->setRank(1)
+                        ->setSortno(1)
                         ->setType($type)
                         ->setLink($links[$key]);
                     if (isset($targets[$key])) {
                         $Banner->setTarget($targets[$key]);
                     }
-                    if ($type == Banner::BANNER) {
+                    if ($type == Banner::BANNER && !empty($bigs[$key])) {
                         $Banner->setBig($bigs[$key]);
                     }
-                    $app['orm.em']->persist($Banner);
+                    $this->entityManager->persist($Banner);
 
-                    $file = new File($app['config']['image_temp_realdir'].'/'.$add_image);
-                    $file->move($app['config']['image_save_realdir']);
+                    $file = new File($this->eccubeConfig->get('eccube_temp_image_dir').'/'.$add_image);
+                    $file->move($this->eccubeConfig->get('eccube_save_image_dir').$this->bannerDir);
                 }
 
                 $delete_images = $form->get('delete_images')->getData();
                 foreach ($delete_images as $delete_image) {
-                    $Banner = $app['plugin.banner_simple.repository.banner']->findOneBy(array('file_name' => $delete_image));
-                    if ($Banner instanceof Banner) {
-                        $app['orm.em']->remove($Banner);
-
+                    $Banner = $this->bannerSampleRepo->findOneBy(array('file_name' => $delete_image));
+                    if ($Banner) {
+                        $this->entityManager->remove($Banner);
                     }
-                    if (!empty($delete_image) && file_exists($app['config']['image_save_realdir'].'/'.$delete_image)) {
+                    if (!empty($delete_image)
+                        && file_exists($fileImage = $this->eccubeConfig->get('eccube_save_image_dir').$this->bannerDir.'/'.$delete_image)) {
                         $fs = new Filesystem();
-                        $fs->remove($app['config']['image_save_realdir'].'/'.$delete_image);
+                        $fs->remove($fileImage);
                     }
                 }
 
                 if (!empty($old_images)) {
                     foreach ($old_images as $key => $old_image) {
                         /** @var Banner $Banner */
-                        $Banner = $app['plugin.banner_simple.repository.banner']->findOneBy(array('file_name' => $old_image));
+                        $Banner = $this->bannerSampleRepo->findOneBy(array('file_name' => $old_image));
                         if ($Banner) {
                             $Banner->setLink($links[$key]);
                             if (isset($targets[$key])) {
                                 $Banner->setTarget($targets[$key]);
                             }
-                            if ($type == Banner::BANNER) {
+                            if ($type == Banner::BANNER && !empty($bigs[$key])) {
                                 $Banner->setBig($bigs[$key]);
                             }
-                            $app['orm.em']->persist($Banner);
+                            $this->entityManager->persist($Banner);
                         }
                     }
                 }
-                $app['orm.em']->flush();
+                $this->entityManager->flush();
 
                 $ranks = $request->get('rank_images');
                 if ($ranks) {
                     foreach ($ranks as $key => $rank) {
-                        list($filename, $rank_val) = explode('//', $rank);
+                        list($filename, $sort_no) = explode('//', $rank);
                         unset($banner);
-                        $banner = $app['plugin.banner_simple.repository.banner']->findOneBy(array('file_name' => $filename, 'type' => $type));
+                        $banner = $this->bannerSampleRepo->findOneBy(array('file_name' => $filename, 'type' => $type));
                         if ($banner) {
-                            $banner->setRank($rank_val);
-                            $app['orm.em']->persist($banner);
+                            $banner->setSortno($sort_no);
+                            $this->entityManager->persist($banner);
                         }
                     }
                 }
 
-                $app['orm.em']->flush();
-                $app->addSuccess("admin.plugin.banner.success", 'admin');
+                $this->entityManager->flush();
+                $this->addSuccess("admin.common.save_complete", 'admin');
 
-                return $app->redirect($app->url('admin_plugin_banner_simple', array('type' => $type)));
+                return $this->redirectToRoute('admin_plugin_banner_simple', array('type' => $type));
             }
-            $app->addError("admin.plugin.banner.error", 'admin');
+            $this->addError("admin.common.save_error", 'admin');
         }
 
-        return $app->render('BannerSimple/Resource/template/admin/banner.twig', array(
+        return [
             'form' => $form->createView(),
-        ));
+        ];
     }
 
     /**
      * Add image for banner
      *
-     * @param Application $app
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @Route("/%eccube_admin_route%/plugin/banner_simple/addImage", name="admin_plugin_banner_simple_image_add")
      */
-    public function addImage(Application $app, Request $request)
+    public function addImage(Request $request)
     {
         if (!$request->isXmlHttpRequest()) {
             throw new BadRequestHttpException('リクエストが不正です');
@@ -149,9 +172,12 @@ class BannerController extends AbstractController
 
         $images = $request->files->get('admin_plugin_banner_simple');
 
+        $allowExtensions = ['gif', 'jpg', 'jpeg', 'png'];
+
         $files = array();
         if (count($images) > 0) {
             foreach ($images as $img) {
+                /** @var UploadedFile $image */
                 foreach ($img as $image) {
                     $mimeType = $image->getMimeType();
                     if (0 !== strpos($mimeType, 'image')) {
@@ -159,13 +185,44 @@ class BannerController extends AbstractController
                     }
 
                     $extension = $image->getClientOriginalExtension();
+                    if (!in_array($extension, $allowExtensions)) {
+                        throw new UnsupportedMediaTypeHttpException();
+                    }
+
                     $filename = date('mdHis').uniqid('_').'.'.$extension;
-                    $image->move($app['config']['image_temp_realdir'], $filename);
+                    $image->move($this->eccubeConfig->get('eccube_temp_image_dir'), $filename);
                     $files[] = $filename;
                 }
             }
         }
 
-        return $app->json(array('files' => $files), 200);
+        return $this->json(array('files' => $files), 200);
+    }
+
+    /**
+     * change top page
+     *
+     * @param Request $request
+     * @param boolean $remove
+     * @return RedirectResponse
+     * @Route("/%eccube_admin_route%/plugin/banner_simple/change/{remove}", name="admin_plugin_banner_simple_top_change")
+     */
+    public function changeTopPage(Request $request, $remove = false)
+    {
+        $file = new Filesystem();
+
+        if ($remove) {
+            $originFile = __DIR__ . '/../Resource/template/default/index.twig';
+            $targetFile = $this->eccubeConfig->get('eccube_theme_front_dir') . '/index.twig';
+            $file->copy($originFile, $targetFile, true);
+        } else {
+            $fileName = $this->eccubeConfig->get('eccube_theme_front_dir') . '/index.twig';
+            if (file_exists($fileName)) {
+                $file->remove($fileName);
+            }
+        }
+        $this->addSuccess("admin.common.save_complete", 'admin');
+
+        return $this->redirectToRoute('admin_plugin_banner');
     }
 }

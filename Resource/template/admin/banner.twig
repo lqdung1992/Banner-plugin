@@ -3,82 +3,117 @@
  * Date: 3/1/2018
  * Time: 12:54 PM
  */#}
-{% extends 'default_frame.twig' %}
+{% extends '@admin/default_frame.twig' %}
 
-{% set menus = ['content', 'banner'] %}
+{% set menus = ['content', 'banner_sample'] %}
 
-{% block title %}コンテンツ管理{% endblock %}
-{% block sub_title %}バナー/スライダー{% endblock %}
+{% block title %}{{ 'banner.nav'|trans }}{% endblock %}
+{% block sub_title %}{{ 'admin.content.contents_management'|trans }}{% endblock %}
 
-{% form_theme form 'Form/bootstrap_3_horizontal_layout.html.twig' %}
+{% form_theme form '@admin/Form/bootstrap_4_horizontal_layout.html.twig' %}
 
 {% block stylesheet %}
-    <link rel="stylesheet" href="{{ app.config.admin_urlpath }}/assets/css/fileupload/jquery.fileupload.css">
-    <link rel="stylesheet" href="{{ app.config.admin_urlpath }}/assets/css/fileupload/jquery.fileupload-ui.css">
-    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
-    <style>
+    <link rel="stylesheet" href="{{ asset('assets/css/fileupload/jquery.fileupload.css', 'admin') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/fileupload/jquery.fileupload-ui.css', 'admin') }}">
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <style type="text/css">
+        .image_link img {
+            max-width: 100%;
+        }
+
+        .image_link {
+            clear: both !important;
+        }
+
+        #thumb div {
+            float: left;
+            margin: 4px;
+        }
+
         .ui-state-highlight {
-            height: 148px;
+            height: 70px;
+            width: 70px;
             border: dashed 1px #ccc;
             background: #fff;
-        }
-        .image_link img {
-            max-width: 150px;
-        }
-        .image_link {
-            padding: 16px 2em 16px 16px;
-            border-top: 1px solid #d1d8d9;
         }
     </style>
 {% endblock stylesheet %}
 
 {% block javascript %}
-    <script src="{{ app.config.admin_urlpath }}/assets/js/vendor/fileupload/vendor/jquery.ui.widget.js"></script>
-    <script src="{{ app.config.admin_urlpath }}/assets/js/vendor/fileupload/jquery.iframe-transport.js"></script>
-    <script src="{{ app.config.admin_urlpath }}/assets/js/vendor/fileupload/jquery.fileupload.js"></script>
-    <script src="{{ app.config.admin_urlpath }}/assets/js/vendor/fileupload/jquery.fileupload-process.js"></script>
-    <script src="{{ app.config.admin_urlpath }}/assets/js/vendor/fileupload/jquery.fileupload-validate.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+    <script src="{{ asset('assets/js/vendor/fileupload/vendor/jquery.ui.widget.js', 'admin') }}"></script>
+    <script src="{{ asset('assets/js/vendor/fileupload/jquery.iframe-transport.js', 'admin') }}"></script>
+    <script src="{{ asset('assets/js/vendor/fileupload/jquery.fileupload.js', 'admin') }}"></script>
+    <script src="{{ asset('assets/js/vendor/fileupload/jquery.fileupload-process.js', 'admin') }}"></script>
+    <script src="{{ asset('assets/js/vendor/fileupload/jquery.fileupload-validate.js', 'admin') }}"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script>
+        $(document).on('drop dragover', function(e) {
+            e.preventDefault();
+        });
+
         $(function() {
             $("#thumb").sortable({
                 cursor: 'move',
                 opacity: 0.7,
                 placeholder: 'ui-state-highlight',
+                start: function(e, ui) {
+                    // creates a temporary attribute on the element with the old index
+                    $(this).attr('data-previndex', ui.item.index());
+                },
                 update: function (event, ui) {
+                    var newIndex = ui.item.index();
+                    var oldIndex = $(this).attr('data-previndex');
+                    $(this).removeAttr('data-previndex');
+
                     updateRank();
+
+                    // change content position
+                    var nextPosition = $("#image_link" + newIndex);
+                    var currentPosition = $("#image_link" + oldIndex);
+                    currentPosition.hide();
+                    if (newIndex >= oldIndex) {
+                        currentPosition.insertAfter(nextPosition);
+                    } else {
+                        currentPosition.insertBefore(nextPosition);
+                    }
+                    currentPosition.fadeIn(1000);
+
+                    // change value of id
+                    $(".image_link").each(function (key, item) {
+                        $(item).attr('id', 'image_link'+key);
+                    });
                 }
             });
-            var image_link = '<div class="image_link marB10" id="image_link__key__">'
-                + '<img class="marB10" src="__path__" />'
+            var new_banner = '<div class="image_link mb-4" id="image_link__key__"></div>';
+            var left_column = '<div class="col-3 d-inline-block pl-0 align-top"></div>';
+            var right_column = '<div class="col-9 d-inline-block pr-0 align-top"></div>';
+            var proto_img = '<div class="c-form__fileUploadThumbnail" style="background-image:url(\'__path__\');">'
+                + '<a class="delete-image"><i class="fa fa-times" aria-hidden="true"></i></a>'
                 + '</div>';
-            var proto_img = ''
-                + '<li class="ui-state-default">'
-                + '<img src="__path__" />'
-                + '<a class="delete-image">'
-                + '<svg class="cb cb-close">'
-                + '<use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#cb-close"></use>'
-                + '</svg>'
-                + '</a>'
-                + '</li>';
+            var image_link = '<img class="mb-1" src="__path__" />';
             var proto_add = '{{ form_widget(form.add_images.vars.prototype) }}';
             var proto_del = '{{ form_widget(form.delete_images.vars.prototype) }}';
             var proto_link = '{{ form_widget(form.links.vars.prototype) }}';
-            var proto_big = '<div class="marT15" style="display:__show__;">'+'{{ form_widget(form.big.vars.prototype) }}'+'</div>';
-
-            var proto_target = '<div class="marT15">'+'{{ form_widget(form.target.vars.prototype)|e('js')|raw }}'+'</div>';
-            var target_label = '{{ form.target.vars.label }}';
+            var proto_target = '<div class="pl-0 mt-1 col-6">'
+                + '{{ form_widget(form.target.vars.prototype)|e('js')|raw }}'
+                + '</div>';
+            var proto_big = '<div class="pl-0 mt-1 col-3" style="display:__show__;">'
+                + '{{ form_widget(form.big.vars.prototype)|e('js')|raw }}'
+                + '</div>';
+            var target_label = '{{ form.target.vars.label|trans }}';
             proto_target = proto_target.replace(/__name__label__/g, target_label);
 
+            var currentPath = '{{ path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')) }}';
+            var bannerPath = '{{ path('admin_plugin_banner_simple', {'type' : constant('Plugin\\BannerSimple\\Entity\\Banner::BANNER')}) }}';
             var appendImageLink = function (key, path, linkData, isBig, target) {
-                var $image_link = image_link.replace(/__key__/g, key);
-                $image_link = $($image_link.replace(/__path__/g, path));
+                var $new_banner = $(new_banner.replace(/__key__/g, key));
+                var $image_link = $(image_link.replace(/__path__/g, path));
                 var $link = $(proto_link.replace(/__name__/g, key));
                 if (linkData) {
                     $link.val(linkData);
                 }
                 var display = 'none';
-                if ('{{ app.request.get('type', 1) }}' == '{{ constant('Plugin\\BannerSimple\\Entity\\Banner::BANNER') }}') {
+                if (currentPath == bannerPath) {
                     display = 'block';
                 }
                 // div included
@@ -91,11 +126,15 @@
                 if (target) {
                     $target.find('input').prop('checked', true);
                 }
+                // new_banner
+                $new_banner.append($(left_column).append($image_link)).append($(right_column).append($link).append($target).append($big));
 
-                $("#detail_link").append($image_link.append($link).append($target).append($big));
+                $("#detail_link").append($new_banner);
             };
+
             {% for key, image in form.images %}
-            var image_url = '{{ app.config.image_save_urlpath }}/{{ image.vars.value }}';
+            var image_url = '{{ asset('Banner/'~image.vars.value, 'save_image') }}';
+            {#'{{ eccube_config.eccube_save_image_dir }}/Banner/{{ image.vars.value }}';#}
             var $img = $(proto_img.replace(/__path__/g, image_url));
             var $widget = $('{{ form_widget(image) }}');
             $widget.val('{{ image.vars.value }}');
@@ -110,7 +149,8 @@
 
             var count_old = {{ form.images|length|default(0) }};
             {% for key, add_image in form.add_images %}
-            var image_url = '{{ app.config.image_temp_urlpath }}/{{ add_image.vars.value }}';
+            var image_url = '{{ asset('Banner/'~image.vars.value, 'save_image') }}';
+            {#var image_url = '{{ asset(add_image.vars.value, 'temp_image') }}';#}
             var $img = $(proto_img.replace(/__path__/g, image_url));
             var $widget = $('{{ form_widget(add_image) }}');
             $widget.val('{{ add_image.vars.value }}');
@@ -128,37 +168,39 @@
             {% endfor %}
 
             var hideSvg = function () {
-                if ($("#thumb li").length > 0) {
+                if ($("#thumb div").length > 0) {
                     $("#icon_no_image").css("display", "none");
+                    $('#message').text("{{ 'admin.common.drag_and_drop_description'|trans }}");
                 } else {
                     $("#icon_no_image").css("display", "");
+                    $('#message').empty();
                 }
             };
 
             var updateRank = function () {
-                $("#thumb li").each(function (index) {
+                $("#thumb div").each(function (index) {
                     $(this).find(".rank_images").remove();
-                    filename = $(this).find("input[type='hidden']").val();
-                    $rank = $('<input type="hidden" class="rank_images" name="rank_images[]" />');
-                    $rank.val(filename + '//' + parseInt(index + 1));
-                    $(this).append($rank);
+                    var filename = $(this).find("input[type='hidden']").val();
+                    var $sort_no = $('<input type="hidden" class="rank_images" name="rank_images[]" />');
+                    $sort_no.val(filename + '//' + parseInt(index + 1));
+                    $(this).append($sort_no);
                 });
             };
             hideSvg();
             updateRank();
-            // 画像削除時
+            // delete
             var count_del = 0;
             $("#thumb").on("click", ".delete-image", function () {
                 var $new_delete_image = $(proto_del.replace(/__name__/g, count_del));
-                var src = $(this).prev().attr('src')
-                    .replace('{{ app.config.image_temp_urlpath }}/', '')
-                    .replace('{{ app.config.image_save_urlpath }}/', '');
+                var thumbnail = $(this).parents('div.c-form__fileUploadThumbnail');
+                var src = $(thumbnail).find('input').val();
+
                 $new_delete_image.val(src);
                 $("#thumb").append($new_delete_image);
-                var deleteLi = $(this).parent("li");
-                deleteLi.remove();
+                var deleteDiv = $(this).parent("div");
+                deleteDiv.remove();
                 // Remove image link
-                var $key = $(deleteLi).find('input').first().attr('id').replace('admin_plugin_banner_simple_add_images_', '').replace('admin_plugin_banner_simple_images_', '');
+                var $key = $(deleteDiv).find('input').first().attr('id').replace('admin_plugin_banner_simple_add_images_', '').replace('admin_plugin_banner_simple_images_', '');
                 $('#image_link' + $key).remove();
 
                 hideSvg();
@@ -174,7 +216,7 @@
                 done: function (e, data) {
                     $('#progress').hide();
                     $.each(data.result.files, function (index, file) {
-                        var path = '{{ app.config.image_temp_urlpath }}/' + file;
+                        var path = '{{ asset('', 'temp_image') }}' + file;
                         var $img = $(proto_img.replace(/__path__/g, path));
                         var $new_img = $(proto_add.replace(/__name__/g, count_old));
                         $new_img.val(file);
@@ -182,7 +224,7 @@
                         $('#thumb').append($child);
 
                         // append image link to new row
-                        appendImageLink(count_old, path);
+                        appendImageLink(count_old, path, null, null, true);
 
                         count_old++;
                     });
@@ -190,7 +232,7 @@
                     updateRank();
                 },
                 fail: function (e, data) {
-                    alert('アップロードに失敗しました。');
+                    alert("{{ 'admin.common.upload_error'|trans }}");
                 },
                 always: function (e, data) {
                     $('#progress').hide();
@@ -211,7 +253,7 @@
                 },
                 processalways: function (e, data) {
                     if (data.files.error) {
-                        alert("画像ファイルサイズが大きいか画像ファイルではありません。");
+                        alert("{{ 'admin.common.upload_error'|trans }}");
                     }
                 }
             });
@@ -223,77 +265,203 @@
 
             $("input[name='admin_plugin_banner_simple[type]']").change(function() {
                 var val = $(this).val();
-                var url = '{{ url('admin_plugin_banner_simple') }}' + '?type='+val;
+                var url = '{{ url('admin_plugin_banner') }}' + '/'+val;
                 window.location.href = url;
-            })
+            });
 
+            var confirmFormChange = function(target, modal) {
+                var saveBtn = modal.find('a[data-action="save"]');
+                target.on('click', function() {
+                    modal.find('.modal-body .screen-name').text($(this).attr('title'));
+                    modal.modal('show');
+                    saveBtn.attr('href', $(this).attr('href'));
+                    return false;
+                });
+            };
+            confirmFormChange($('a[data-action="confirm"]'), $('#confirmFormChangeModal'));
         });
     </script>
 {% endblock javascript %}
 
 {% block main %}
-    <div class="row" id="aside_wrap">
-        <form name="form1" id="form1" method="post" enctype="multipart/form-data">
-            {{ form_widget(form._token) }}
-            <div id="detail_wrap" class="col-md-9">
-                <div id="detail_box" class="box form-horizontal">
-                    <div id="detail_box__header" class="box-header">
-                        <h3 class="box-title">バナー/スライダー</h3>
-                    </div><!-- /.box-header -->
-                    <div id="detail_box__body" class="box-body">
-                        {{ form_row(form.type) }}
-                        <div id="detail_box__image" class="form-group">
-                            <label class="col-sm-2 control-label">
-                                {{ form.file_name.vars.label }}<br>
-                                <span class="small">1120px以上推奨</span>
-                                <br>
-                                <span class="small">保存した後、写真の注文が更新されます。</span>
-                            </label>
-                            <div id="detail_files_box" class="col-sm-9 col-lg-10">
-                                <div class="photo_files" id="drag-drop-area">
-                                    <svg id="icon_no_image" class="cb cb-photo no-image"> <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#cb-photo"></use></svg>
-                                    <ul id="thumb" class="clearfix"></ul>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group marB30">
-                            <div id="detail_box__file_upload" class="col-sm-offset-2 col-sm-9 col-lg-10 ">
-                                <div id="progress" class="progress progress-striped active" style="display:none;">
-                                    <div class="progress-bar progress-bar-info"></div>
-                                </div>
-                                {{ form_widget(form.file_name, { attr : { accept : 'image/*', style : 'display:none;' } }) }}
-                                {{ form_errors(form.file_name) }}
-                                <a id="file_upload" class="with-icon">
-                                    <svg class="cb cb-plus"> <use xlink:href="#cb-plus" /></svg>ファイルをアップロード
-                                </a>
-                            </div>
-                        </div>
-                        <div id="image" class="form-group">
-                            <label class="col-sm-2 control-label" for="">
-                                {{ form.links.vars.label }}
-                            </label>
-                            <div id="detail_link" class="col-sm-9 col-lg-10">
-                            </div>
-                        </div>
-                    </div><!-- /.box-body -->
-                </div><!-- /.box -->
-            </div><!-- /.col -->
-
-            <div class="col-md-3" id="aside_column">
-                <div id="common_box" class="col_inner">
-                    <div id="common_button_box" class="box no-header">
-                        <div id="common_button_box__body" class="box-body">
-                            <div id="common_button_box__insert_button" class="row text-center">
-                                <div class="col-sm-6 col-sm-offset-3 col-md-12 col-md-offset-0">
-                                    <button type="submit" class="btn btn-primary btn-block btn-lg">バナー/スライダの登録</button>
-                                </div>
-                            </div>
-                        </div><!-- /.box-body -->
-                    </div><!-- /.box -->
+    <div class="modal fade" id="confirmFormChangeModal" tabindex="-1" role="dialog"
+         aria-labelledby="confirmFormChangeModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ 'Xac nhan thay doi noi dung cua toppage'|trans }}</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p class="screen-name"></p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-ec-sub" type="button" data-dismiss="modal">
+                        {{ 'admin.common.cancel'|trans }}
+                    </button>
+                    <a class="btn btn-ec-conversion" data-action="save" href="javascript:void(0)">
+                        {{ 'common.change'|trans }}
+                    </a>
 
                 </div>
-            </div><!-- /.col -->
-
-        </form>
+            </div>
+        </div>
     </div>
+
+    <form name="form1" id="form1" method="post" enctype="multipart/form-data" novalidate>
+        {{ form_widget(form._token) }}
+        <div class="c-contentsArea__cols">
+            <div class="c-contentsArea__primaryCol">
+                <div class="c-primaryCol">
+
+                    {# Todo: setting#}
+                    {#<div class="card rounded border-0 mb-4">#}
+                        {#<div class="card-header">#}
+                            {#<div class="row">#}
+                                {#<div class="col-8">#}
+                                    {#<div class="d-inline-block">#}
+                                        {#<span class="card-title">{{ 'banner.setting'|trans }}</span>#}
+                                    {#</div>#}
+                                {#</div>#}
+                                {#<div class="col-4 text-right">#}
+                                    {#<a data-toggle="collapse" href="#setting" aria-expanded="false" aria-controls="setting">#}
+                                        {#<i class="fa fa-angle-up fa-lg"></i>#}
+                                    {#</a>#}
+                                {#</div>#}
+                            {#</div>#}
+                        {#</div>#}
+                        {#<div class="collapse show ec-cardCollapse" id="setting">#}
+                            {#<div class="card-body">#}
+                                {#<div class="row">#}
+                                    {#<div class="col-3">#}
+                                        {#{{ 'main of toppage'|trans }}#}
+                                    {#</div>#}
+                                    {#<div class="col">#}
+                                        {#<a href="{{ path('admin_plugin_banner_simple_top_change', { 'remove' : 1 }) }}" class="btn btn-ec-regular" data-action="confirm" title="test 1">{{ 'test button 1'|trans }}</a>#}
+                                        {#<a href="{{ path('admin_plugin_banner_simple_top_change') }}" class="btn btn-ec-regular" data-action="confirm" title="test 0">{{ 'test button 0'|trans }}</a>#}
+
+                                        {#<button type="button" class="btn btn-ec-conversion px-5"></button>#}
+                                        {#<button type="button" class="btn btn-ec-conversion px-5"></button>#}
+                                    {#</div>#}
+                                {#</div>#}
+                            {#</div>#}
+                        {#</div>#}
+                    {#</div>#}
+
+                    {#upload file#}
+                    <div class="card rounded border-0 mb-4">
+                        <div class="card-header">
+                            <div class="row">
+                                <div class="col-8">
+                                    <div class="d-inline-block">
+                                        <span class="card-title">{{ 'banner.nav'|trans }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-4 text-right">
+                                    <a data-toggle="collapse" href="#banner" aria-expanded="false"
+                                       aria-controls="banner">
+                                        <i class="fa fa-angle-up fa-lg"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="collapse show ec-cardCollapse" id="banner">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-3">
+                                        {#{{ form_label(form.type) }}#}
+                                        {{ form.type.vars.label|trans }}
+                                    </div>
+                                    <div class="col">
+                                        {{ form_widget(form.type) }}
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-3">
+                                        <div class="d-inline-block" data-tooltip="true" data-placement="top" title="">
+                                            <span>{{ form.file_name.vars.label|trans }}</span>
+                                            <br>
+                                            <span class="small">{{ 'banner.file.help1'|trans }}</span>
+                                            <br>
+                                            <span class="small">{{ 'banner.file.help2'|trans }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col mb-2">
+                                        <div class="progress" style="display: none;">
+                                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div id="thumb" class="c-form__fileUploadThumbnails clearfix"></div>
+                                        <p id="message"></p>
+                                        <div id="upload-zone" class="media py-5 border-ec-dashed mb-2 rounded">
+                                            <div class="media-body">
+                                                <i class="fa fa-cloud-upload fa-3x text-ec-lightGray mx-3 align-middle" aria-hidden="true"></i>
+                                                {{ 'admin.common.drag_and_drop_image_description'|trans }}
+                                                {{ form_widget(form.file_name, { attr : { accept : 'image/*', style : 'display:none;' } }) }}
+                                                {{ form_errors(form.file_name) }}
+                                                <a class="btn btn-ec-regular mr-2" id="file_upload">
+                                                    {{ 'admin.common.file_select'|trans }}
+                                                </a>
+                                            </div><!-- /.media-body -->
+                                        </div><!-- /.media -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {#other#}
+                    <div class="card rounded border-0 mb-4">
+                        <div class="card-header">
+                            <div class="row">
+                                <div class="col-8">
+                                    <div class="d-inline-block">
+                                        <span class="card-title">{{ 'banner.addition'|trans }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-4 text-right">
+                                    <a data-toggle="collapse" href="#content" aria-expanded="false" aria-controls="content">
+                                        <i class="fa fa-angle-up fa-lg"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="collapse show ec-cardCollapse" id="content">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-3">
+                                        {{ form.links.vars.label|trans }}
+                                    </div>
+                                    <div class="col">
+                                        <div id="detail_link">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="c-conversionArea">
+            <div class="c-conversionArea__container">
+                <div class="row justify-content-between align-items-center">
+                    <div class="col-6">
+                        <div class="c-conversionArea__leftBlockItem">
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div id="ex-conversion-action" class="row align-items-center justify-content-end">
+                            <div class="col-auto">
+                                <button class="btn btn-ec-conversion px-5" type="submit">{{ 'admin.common.registration'|trans }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
 {% endblock %}

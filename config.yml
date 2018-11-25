@@ -1,7 +1,0 @@
-name: BannerSimplePlugin
-code: BannerSimple
-version: 1.0.0
-service: 
-    - BannerServiceProvider
-orm.path:
-    - /Resource/doctrine

@@ -6,8 +6,16 @@
  */
 namespace Plugin\BannerSimple\Entity;
 
+use Doctrine\ORM\Mapping as ORM;
+
 /**
- * BannerSimple
+ * Banner
+ *
+ * @ORM\Table(name="plg_banner_simple")
+ * @ORM\InheritanceType("SINGLE_TABLE")
+ * @ORM\DiscriminatorColumn(name="discriminator_type", type="string", length=255)
+ * @ORM\HasLifecycleCallbacks()
+ * @ORM\Entity(repositoryClass="Plugin\BannerSimple\Repository\BannerRepository")
  */
 class Banner extends \Eccube\Entity\AbstractEntity
 {
@@ -27,38 +35,78 @@ class Banner extends \Eccube\Entity\AbstractEntity
 
     /**
      * @var integer
+     *
+     * @ORM\Column(name="id", type="integer", options={"unsigned":true})
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $id;
 
     /**
      * @var string
+     *
+     * @ORM\Column(name="file_name", type="string", length=255, nullable=false)
      */
     private $file_name;
 
     /**
      * @var integer
+     *
+     * @ORM\Column(name="sort_no", type="integer", nullable=false)
      */
-    private $rank;
+    private $sort_no;
 
     /**
      * @var integer
+     *
+     * @ORM\Column(name="type", type="smallint", nullable=false, options={"comment":"banner or slider"})
      */
     private $type;
 
     /**
+     * @var integer
+     *
+     * @ORM\Column(name="is_big", type="smallint", nullable=true, options={"comment":"is big banner or not"})
+     */
+    private $big;
+
+    /**
      * @var string
+     *
+     * @ORM\Column(name="link_to", type="string", length=2000, nullable=true)
      */
     private $link;
 
     /**
+     * @var bool
+     *
+     * @ORM\Column(name="is_target_blank", type="boolean", nullable=true)
+     */
+    private $target;
+
+    /**
      * @var \DateTime
+     *
+     * @ORM\Column(name="create_date", type="datetimetz")
      */
     private $create_date;
 
     /**
-     * @var integer
+     * @var \DateTime
+     *
+     * @ORM\Column(name="update_date", type="datetimetz")
      */
-    private $target;
+    private $update_date;
+
+    /**
+     * @var \Eccube\Entity\Member
+     *
+     * @ORM\ManyToOne(targetEntity="Eccube\Entity\Member")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="creator_id", referencedColumnName="id")
+     * })
+     */
+    private $Creator;
 
     /**
      * Get id
@@ -94,26 +142,26 @@ class Banner extends \Eccube\Entity\AbstractEntity
     }
 
     /**
-     * Set rank
+     * Set sort_no
      *
-     * @param integer $rank
+     * @param integer $sort_no
      * @return Banner
      */
-    public function setRank($rank)
+    public function setSortno($sort_no)
     {
-        $this->rank = $rank;
+        $this->sort_no = $sort_no;
 
         return $this;
     }
 
     /**
-     * Get rank
+     * Get sort_no
      *
      * @return integer
      */
-    public function getRank()
+    public function getSortno()
     {
-        return $this->rank;
+        return $this->sort_no;
     }
 
     /**
@@ -140,7 +188,7 @@ class Banner extends \Eccube\Entity\AbstractEntity
     }
 
     /**
-     * Set rank
+     * Set sort_no
      *
      * @param integer $Type
      * @return Banner
@@ -162,10 +210,8 @@ class Banner extends \Eccube\Entity\AbstractEntity
         return $this->type;
     }
 
-    protected $big;
-
     /**
-     * Set rank
+     * Set sort_no
      *
      * @param integer $Type
      * @return Banner
@@ -229,6 +275,44 @@ class Banner extends \Eccube\Entity\AbstractEntity
     public function setTarget($target)
     {
         $this->target = $target;
+
+        return $this;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getUpdateDate(): \DateTime
+    {
+        return $this->update_date;
+    }
+
+    /**
+     * @param \DateTime $update_date
+     * @return $this
+     */
+    public function setUpdateDate(\DateTime $update_date)
+    {
+        $this->update_date = $update_date;
+
+        return $this;
+    }
+
+    /**
+     * @return \Eccube\Entity\Member
+     */
+    public function getCreator()
+    {
+        return $this->Creator;
+    }
+
+    /**
+     * @param \Eccube\Entity\Member $Creator
+     * @return $this
+     */
+    public function setCreator(\Eccube\Entity\Member $Creator)
+    {
+        $this->Creator = $Creator;
 
         return $this;
     }

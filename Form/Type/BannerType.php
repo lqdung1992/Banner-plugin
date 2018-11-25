@@ -8,6 +8,12 @@ namespace Plugin\BannerSimple\Form\Type;
 
 use Plugin\BannerSimple\Entity\Banner;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -22,79 +28,80 @@ class BannerType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('type', 'choice', array(
-                'label' => 'タイプ',
+            ->add('type', ChoiceType::class, array(
+                'label' => trans('banner.type.label'),
                 'expanded' => true,
-                'choices'  => array(
-                    Banner::BANNER => 'バナー',
-                    Banner::SLIDER => 'スライダー',
-                ),
+                'choices'  => array_flip(array(
+                    Banner::BANNER => trans('banner.type.banner'),
+                    Banner::SLIDER => trans('banner.type.slider'),
+                )),
             ))
-            ->add('file_name', 'file', array(
-                'label' => 'バナー/スライダー',
+            ->add('file_name', FileType::class, array(
+                'label' => trans('banner.type.file'),
                 'multiple' => true,
                 'required' => false,
                 'mapped' => false,
             ))
-            ->add('images', 'collection', array(
-                'type' => 'hidden',
+            ->add('images', CollectionType::class, array(
+                'entry_type' => HiddenType::class,
                 'prototype' => true,
                 'mapped' => false,
                 'allow_add' => true,
                 'allow_delete' => true,
             ))
-            ->add('add_images', 'collection', array(
-                'type' => 'hidden',
+            ->add('add_images', CollectionType::class, array(
+                'entry_type' => HiddenType::class,
                 'prototype' => true,
                 'mapped' => false,
                 'allow_add' => true,
                 'allow_delete' => true,
             ))
-            ->add('delete_images', 'collection', array(
-                'type' => 'hidden',
+            ->add('delete_images', CollectionType::class, array(
+                'entry_type' => HiddenType::class,
                 'prototype' => true,
                 'mapped' => false,
                 'allow_add' => true,
                 'allow_delete' => true,
             ))
-            ->add('links', 'collection', array(
-                'label' => 'バナーリンク/スライダリンク',
-                'type' => 'url',
+            ->add('links', CollectionType::class, array(
+                'label' => 'banner.type.link',
+                'entry_type' => UrlType::class,
                 'prototype' => true,
                 'allow_add' => true,
                 'allow_delete' => true,
                 'required' => false,
-                'options'  => array(
+                'entry_options'  => array(
                     'attr' => array(
-                        'placeholder' => 'URLを入力してください',
+                        'placeholder' => 'banner.type.link.placeholder',
                         'pattern' => 'https?://.+',
                         'data-fv-uri' => 'true',
                     ),
                 ),
             ))
-            ->add('big', 'collection', array(
-                'label' => '大きなバナー',
-                'type' => 'choice',
+            ->add('big', CollectionType::class, array(
+                'label' => 'banner.type.big',
+                'entry_type' => ChoiceType::class,
                 'prototype' => true,
                 'allow_add' => true,
                 'allow_delete' => true,
                 'required' => false,
-                'options' => array(
-                    'choices' => array(
-                        Banner::IS_SMALL => '小さい',
-                        Banner::IS_BIG => '大',
-                    ),
+                'entry_options' => array(
+                    'choices' => array_flip(array(
+                        Banner::IS_BIG => trans('banner.file.big.big'),
+                        Banner::IS_SMALL => trans('banner.file.big.small'),
+                    )),
+                    'placeholder' => false,
                 ),
             ))
-            ->add('target', 'collection', array(
-                'label' => '別ウィンドウを開く',
-                'type' => 'checkbox',
+            ->add('target', CollectionType::class, array(
+                'label' => trans('banner.type.target'),
+                'entry_type' => CheckboxType::class,
                 'prototype' => true,
                 'allow_add' => true,
                 'allow_delete' => true,
                 'required' => false,
-            ))
-        ;
+                'entry_options' => array(),
+            ));
     }
 
     /**
@@ -107,7 +114,7 @@ class BannerType extends AbstractType
     /**
      * {@inheritdoc}
      */
-    public function getName()
+    public function getBlockPrefix()
     {
         return 'admin_plugin_banner_simple';
     }

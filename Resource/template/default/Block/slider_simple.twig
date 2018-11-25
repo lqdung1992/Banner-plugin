@@ -1,8 +1,8 @@
 {#
  # Created by PhpStorm.
  # User: lqdung1992@gmail.com
- # Date: 3/3/2018
- # Time: 2:33 PM
+ # Date: 10/15/2018
+ # Time: 11:14 AM
  #}
 {% block stylesheet %}
     <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/gh/kenwheeler/slick@1.8.1/slick/slick-theme.css"/>
@@ -15,25 +15,15 @@
                 display: none;
             }
         }
-
         #main-visual img {
             width: 100%;
         }
-
         .thumb img {
             height: 100px;
         }
         #main-visual .slick-slider {
             margin-bottom: 10px;
         }
-        #banner img {
-            width: 100%;
-        }
-
-        #banner .banner-item {
-            margin-bottom: 5px;
-        }
-
         .slick-prev:before, .slick-next:before {
             opacity: .25;
             color: black;
@@ -41,17 +31,19 @@
     </style>
 {% endblock stylesheet %}
 
+{% set sliders = repository("Plugin\\BannerSimple\\Entity\\Banner").getSliders() %}
+
 {% if sliders|length > 0 %}
-    <div id="main-visual">
+    <div id="main-visual" class="ec-sliderRole">
         <div class="row">
-            <div class="col-sm-12">
+            <div class="col-xs-12">
                 <div class="slider slider-for">
                     {% for slider in sliders %}
                         <div class="item">
                             {% if slider.link %}
                             <a href="{{ slider.link }}" {% if slider.target %}target="_blank"{% endif %}>
                                 {% endif %}
-                                <img src="{{ app.config.image_save_urlpath }}/{{ slider.file_name|no_image_product }}" >
+                                <img src="{{ asset('Banner/'~slider.file_name, 'save_image') }}" >
                                 {% if slider.link %}
                             </a>
                             {% endif %}
@@ -61,7 +53,7 @@
                 <div class="slider slider-nav">
                     {% for slider in sliders %}
                         <div class="thumb">
-                            <img src="{{ app.config.image_save_urlpath }}/{{ slider.file_name|no_image_product }}">
+                            <img src="{{ asset('Banner/'~slider.file_name, 'save_image') }}" >
                         </div>
                     {% endfor %}
                 </div>
@@ -107,41 +99,4 @@
             });
         });
     </script>
-{% endif %}
-
-{% if banners|length > 0 %}
-    <script type="text/javascript">
-        $(function () {
-            $(window).load(function() {
-                $('.banner-item').matchHeight();
-            });
-        });
-    </script>
-    <div id="banner" class="row">
-        <div class="clearfix">
-            {% for banner in banners %}
-                {% if banner.big == constant('Plugin\\BannerSimple\\Entity\\Banner::IS_BIG') %}
-                    <div class="col-sm-12 col-xs-12 banner-item">
-                        {% if banner.link %}
-                        <a href="{{banner.link}}" {% if banner.target %}target="_blank"{% endif %}>
-                            {% endif %}
-                            <img src="{{ app.config.image_save_urlpath }}/{{ banner.file_name|no_image_product }}">
-                            {% if banner.link %}
-                        </a>
-                        {% endif %}
-                    </div>
-                {% else %}
-                    <div class="col-sm-6 col-xs-6 banner-item">
-                        {% if banner.link %}
-                        <a href="{{banner.link}}" {% if banner.target %}target="_blank"{% endif %}>
-                            {% endif %}
-                            <img src="{{ app.config.image_save_urlpath }}/{{ banner.file_name|no_image_product }}"/>
-                            {% if banner.link %}
-                        </a>
-                        {% endif %}
-                    </div>
-                {% endif %}
-            {% endfor %}
-        </div>
-    </div>
 {% endif %}
